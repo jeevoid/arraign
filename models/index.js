@@ -8,11 +8,10 @@ sequelize
     console.log('Connection has been established successfully.');
   })
   .catch((err) => {
-    console.log('Unable to connect to the database:', err);
+    console.error('Unable to connect to the database:', err);
   });
 
-fs
-  .readdirSync(__dirname)
+fs.readdirSync(__dirname)
   .filter(file => file !== 'index.js')
   .forEach((file) => {
     const model = sequelize.import(path.join(__dirname, file));

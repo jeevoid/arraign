@@ -8,13 +8,14 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const mysql =require("mysql2");
 const { sequelize } = require('./models');
+const routes = require('./routes/users');
 
-require('./passport')(passport); 
+require('./common/passport')(passport); 
 app.use(eSession({
 	secret: 'testtsts',
 	resave: true,
 	saveUninitialized: true
- } ));
+ }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(morgan('dev')); 
@@ -25,31 +26,14 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 
+// sync all the database schema
 sequelize.sync({force: false}).then(() => {
     console.log("database is in sync");
 });
 
-app.get('/failed', (req, res) => {res.send('signup failed')});
+// initialize the route handlers
+app.use('/', routes);
 
-app.get('/signup', function(req, res) {
-    res.render('signup.ejs');
-});
-
-app.post('/signup', passport.authenticate('local-signup', {
-    successRedirect : '/success', // redirect to the secure profile section
-    failureRedirect : '/failed', // redirect back to the signup page if there is an error
-}));
-
-app.post('/login', passport.authenticate('local-login', {
-    successRedirect : '/success', // redirect to the secure profile section
-    failureRedirect : '/failed', // redirect back to the signup page if there is an error
-}));
-
-app.get('/success', isLoggedIn, (req, res) => {res.send('Hello World!') });
+// start application server
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
-function isLoggedIn(req, res, next) {
-	if (req.isAuthenticated())
-		return next();
-	res.redirect('/signup');
-}
